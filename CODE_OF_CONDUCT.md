@@ -31,8 +31,12 @@ Examples of unacceptable behaviour include:
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behaviour may be
-reported to the project maintainer via GitHub. All complaints will be reviewed
-and investigated promptly and fairly.
+reported to the project maintainer via GitHub — either by opening a private
+security advisory at
+<https://github.com/roman-zaglauer/dot-files/security/advisories/new>
+or by contacting [@roman-zaglauer](https://github.com/roman-zaglauer)
+directly. All complaints will be reviewed and investigated promptly and
+fairly.
 
 ## Attribution
 

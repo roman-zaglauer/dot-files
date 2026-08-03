@@ -59,18 +59,21 @@ list_packages() {
 
 # --- interactive picker (no external deps) ---------------------------------
 pick_interactive() {
-  log "${C_BOLD}Select packages to install${C_RESET} (space-separated numbers, 'a' for all, empty to cancel):"
+  log "${C_BOLD}dot-files installer${C_RESET}"
   local i=1
   for pkg in "${PACKAGE_ORDER[@]}"; do
-    printf '  [%d] %-8s → %s\n' "$i" "$pkg" "${PACKAGES[$pkg]}"
+    printf '  [%d] %-8s (%s)\n' "$i" "$pkg" \
+      "$(echo "${PACKAGES[$pkg]}" | sed 's/^/./;s/ / ./g')"
     i=$((i + 1))
   done
-  printf '> '
-  local reply; read -r reply
-  [ -z "$reply" ] && { warn "Nothing selected."; exit 0; }
-  if [ "$reply" = "a" ] || [ "$reply" = "all" ]; then
-    SELECTED=("${PACKAGE_ORDER[@]}"); return
-  fi
+  printf '  [a] all   [q] quit\n'
+  printf '» select: '
+  local reply
+  if ! read -r reply; then warn "cancelled"; exit 0; fi
+  case "${reply// /}" in
+    ''|q|Q|quit) warn "cancelled"; exit 0 ;;
+    a|A|all)     SELECTED=("${PACKAGE_ORDER[@]}"); return ;;
+  esac
   SELECTED=()
   for n in $reply; do
     [[ "$n" =~ ^[0-9]+$ ]] || { err "Not a number: $n"; exit 1; }

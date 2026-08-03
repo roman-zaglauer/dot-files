@@ -2,10 +2,17 @@ name: Feature request
 description: Suggest a new package, alias, or installer capability.
 labels: ["enhancement"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        This repo stays deliberately small. Please describe the concrete
+        problem first — that helps decide whether the fix belongs here or
+        in a personal `~/.dotfiles/*` override.
   - type: textarea
     id: problem
     attributes:
       label: What problem does this solve?
+      description: What are you trying to do that's currently awkward?
     validations:
       required: true
   - type: textarea
@@ -19,3 +26,4 @@ body:
     id: alternatives
     attributes:
       label: Alternatives considered
+      description: Including "just put it in `~/.dotfiles/bashrc`" — say why that isn't enough.

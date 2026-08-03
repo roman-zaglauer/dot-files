@@ -6,8 +6,11 @@ body:
     attributes:
       value: |
         Thanks for taking the time to file a bug report.
-        **Do not include** the contents of `~/.dotfiles/*`, `~/.gitconfig.local`,
-        `~/.bashrc.local`, SSH keys, GPG keys, or any credential material.
+
+        **Please redact anything private.** Do not paste the contents of
+        `~/.dotfiles/*`, `~/.gitconfig.local`, `~/.bashrc.local`, SSH keys,
+        GPG keys, tokens, hostnames, or any other credential material.
+        Issues that contain such data may be edited or closed without notice.
   - type: input
     id: os
     attributes:

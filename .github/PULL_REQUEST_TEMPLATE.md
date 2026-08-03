@@ -1,7 +1,7 @@
-<!-- Thanks for contributing! Please keep the checklist below. -->
+<!-- Thanks for contributing! A short PR is a happy PR. -->
 
 ## Summary
-<!-- What does this change and why? -->
+<!-- What does this change, and why? Link any related issue. -->
 
 ## Type of change
 - [ ] Bug fix
@@ -14,7 +14,6 @@
 - [ ] No secrets, keys, tokens, personal identity, or private hostnames added
 - [ ] `shellcheck install.sh uninstall.sh` is clean
 - [ ] `./install.sh --dry-run all` runs without errors
-- [ ] If a new file was added under `home/`, it is registered in the
-      `PACKAGES` map in **both** `install.sh` and `uninstall.sh` and mentioned
-      in `README.md`
+- [ ] New files under `home/` are registered in the `PACKAGES` map in
+      **both** `install.sh` and `uninstall.sh`, and listed in `README.md`
 - [ ] `CHANGELOG.md` updated under `[Unreleased]`

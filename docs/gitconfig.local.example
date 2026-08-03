@@ -1,22 +1,35 @@
-; Copy to ~/.gitconfig.local and fill in with your personal / machine-specific
-; values. This file is included from the tracked ~/.gitconfig via [include].
-; NEVER commit this file — it contains identity and (optionally) credential
-; helper paths specific to your machine.
+; ---------------------------------------------------------------------------
+; Local git overrides — copy to ~/.dotfiles/gitconfig (preferred) or the
+; legacy ~/.gitconfig.local, then fill in the blocks you need. The tracked
+; ~/.gitconfig [include]s this file, so anything you set here overrides the
+; repo defaults for this machine only.
+;
+; NEVER commit this file. It holds your identity and possibly credential
+; helper paths — both are matched by .gitignore / .gitignore_global.
+; ---------------------------------------------------------------------------
 
+; Who you are. Required so commits are attributed correctly and (optionally)
+; signed with the right key. Kept per-machine because work and personal
+; boxes usually need different addresses.
 [user]
 	name  = Your Name
 	email = you@example.com
 	; signingkey = <GPG or SSH key id>
 
-; Example: pass-git-helper as credential helper (Linux/WSL)
+; Where your credentials come from. Uncomment if you use pass-git-helper
+; (or any other helper) instead of storing tokens in ~/.git-credentials.
+; Machine-specific because the helper binary and store live on this host.
 ;[credential]
 ;	useHttpPath = true
 ;	helper = !pass-git-helper $@
 
-; Example: corporate CA bundle (e.g. Zscaler)
+; Corporate TLS interception (Zscaler, Netskope, custom root CAs).
+; Point git at the CA bundle the host actually trusts. Path varies per
+; machine, which is exactly why it doesn't belong in the tracked config.
 ;[http]
 ;	sslcainfo = /usr/local/share/ca-certificates/corporate.crt
 
-; Example: sign every commit
+; Sign every commit. Enable once `user.signingkey` above is set and your
+; agent (gpg-agent / ssh-agent) is running.
 ;[commit]
 ;	gpgsign = true
