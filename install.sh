@@ -100,10 +100,10 @@ link_one() {
       warn "skipping existing (no --force / no backup): ~/.$file"
       return 0
     else
-      mkdir -p -- "$BACKUP_ROOT"
       if [ "$DRY_RUN" -eq 1 ]; then
         info "would backup $dest → $BACKUP_ROOT/.$file"
       else
+        mkdir -p -- "$BACKUP_ROOT"
         mv -- "$dest" "$BACKUP_ROOT/.$file"
         warn "backed up ~/.$file → $BACKUP_ROOT/.$file"
       fi
@@ -157,5 +157,5 @@ ok "Done."
 log ""
 log "Next steps:"
 log "  • Reload bash:      source ~/.bashrc"
-log "  • Set git identity: mkdir -p ~/.dotfiles && cp docs/gitconfig.local.example ~/.dotfiles/gitconfig && \$EDITOR ~/.dotfiles/gitconfig"
+log "  • Set git identity: mkdir -p ~/.dotfiles && cp $REPO_DIR/docs/gitconfig.local.example ~/.dotfiles/gitconfig && \$EDITOR ~/.dotfiles/gitconfig"
 log "  • Machine-local env: create ~/.dotfiles/bashrc for host-specific overrides"

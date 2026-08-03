@@ -30,9 +30,12 @@ keys, and credential helpers stay off GitHub**.
 
 ## Install
 
+Clone anywhere **except** `~/.dotfiles` — that directory is reserved for
+machine-local overrides (see below). Recommended targets:
+
 ```bash
-git clone https://github.com/<your-user>/dot-files.git ~/.dotfiles
-cd ~/.dotfiles
+git clone https://github.com/roman-zaglauer/dot-files.git ~/.local/share/dot-files
+cd ~/.local/share/dot-files
 ./install.sh                 # interactive menu
 ```
 

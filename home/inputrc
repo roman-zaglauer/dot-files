@@ -28,5 +28,6 @@ set editing-mode emacs
 "\e[1;5C": forward-word
 "\e[1;5D": backward-word
 
-# Optional machine-local override
-$include ~/.dotfiles/inputrc
+# Optional machine-local override.
+# NOTE: readline emits a warning if the file is missing, so it is intentionally
+# left out here. Add `$include ~/.dotfiles/inputrc` yourself if you need it.

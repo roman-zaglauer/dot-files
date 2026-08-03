@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
-# uninstall.sh — remove symlinks created by install.sh and restore the newest
-# backup found under ~/.dotfiles-backup/ (if any).
+# uninstall.sh — remove symlinks created by install.sh and (optionally) restore
+# the newest backup found under ~/.dotfiles-backup/.
 #
 # Usage:
-#   ./uninstall.sh                # interactive, all packages
-#   ./uninstall.sh bash git       # remove specific packages
+#   ./uninstall.sh                  # interactive, all packages, auto-restore
+#   ./uninstall.sh bash git         # remove specific packages
 #   ./uninstall.sh --dry-run all
+#   ./uninstall.sh --no-restore all # remove links, do NOT restore backups
 
 set -euo pipefail
 
 REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 SRC_DIR="$REPO_DIR/home"
 DRY_RUN=0
+NO_RESTORE=0
 
 declare -A PACKAGES=(
   [bash]="bashrc bash_logout profile inputrc"
@@ -26,7 +28,9 @@ warn() { printf '! %s\n' "$*"; }
 
 newest_backup_for() {
   local file="$1"
-  ls -1dt "$HOME/.dotfiles-backup"/*/".$file" 2>/dev/null | head -n1
+  find "$HOME/.dotfiles-backup" -mindepth 2 -maxdepth 2 -name ".$file" \
+    -printf '%T@ %p\n' 2>/dev/null \
+    | sort -nr | head -n1 | cut -d' ' -f2-
 }
 
 unlink_one() {
@@ -34,15 +38,17 @@ unlink_one() {
   local dest="$HOME/.$file"
   local src="$SRC_DIR/$file"
   if [ -L "$dest" ] && [ "$(readlink -- "$dest")" = "$src" ]; then
-    [ "$DRY_RUN" -eq 1 ] && info "would rm  $dest" || rm -- "$dest"
+    if [ "$DRY_RUN" -eq 1 ]; then info "would rm  $dest"; else rm -- "$dest"; fi
     ok "removed ~/.$file"
-    local backup; backup="$(newest_backup_for "$file" || true)"
-    if [ -n "$backup" ] && [ -e "$backup" ]; then
-      if [ "$DRY_RUN" -eq 1 ]; then
-        info "would restore $backup → $dest"
-      else
-        cp -a -- "$backup" "$dest"
-        ok "restored ~/.$file from $backup"
+    if [ "$NO_RESTORE" -eq 0 ]; then
+      local backup; backup="$(newest_backup_for "$file" || true)"
+      if [ -n "$backup" ] && [ -e "$backup" ]; then
+        if [ "$DRY_RUN" -eq 1 ]; then
+          info "would restore $backup → $dest"
+        else
+          cp -a -- "$backup" "$dest"
+          ok "restored ~/.$file from $backup"
+        fi
       fi
     fi
   else
@@ -53,10 +59,11 @@ unlink_one() {
 SELECTED=()
 while [ $# -gt 0 ]; do
   case "$1" in
-    -n|--dry-run) DRY_RUN=1 ;;
-    all)          SELECTED=("${PACKAGE_ORDER[@]}") ;;
-    -h|--help)    sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    *)            SELECTED+=("$1") ;;
+    -n|--dry-run)   DRY_RUN=1 ;;
+    --no-restore)   NO_RESTORE=1 ;;
+    all)            SELECTED=("${PACKAGE_ORDER[@]}") ;;
+    -h|--help)      sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *)              SELECTED+=("$1") ;;
   esac
   shift
 done
