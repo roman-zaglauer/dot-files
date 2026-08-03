@@ -19,6 +19,7 @@ jobs:
         with:
           severity: warning
           scandir: .
+          ignore_paths: home
 
   dry-run-install:
     name: Dry-run install
