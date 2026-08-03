@@ -1,0 +1,381 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
+HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S  "
+HISTCONTROL="erasedups:ignoreboth"
+PROMPT_COMMAND="history -a; history -c; history -r"
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+    force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# some more ls aliases
+alias la='ls -A'
+alias l='ls -CF'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias gitlog='git log --graph --all --pretty="%C(auto)%h %cl %cs %d %s"'
+alias update='sudo apt update && sudo apt upgrade -y'
+alias df='df -h'
+alias du='du -h'
+alias free='free -m'
+alias h='history | grep'
+
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+# NVM configurations
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+###-begin-npm-completion-###
+#
+# npm command completion script
+#
+# Installation: npm completion >> ~/.bashrc  (or ~/.zshrc)
+# Or, maybe: npm completion > /usr/local/etc/bash_completion.d/npm
+#
+
+
+if type complete &>/dev/null; then
+  _npm_completion () {
+    local words cword
+    if type _get_comp_words_by_ref &>/dev/null; then
+      _get_comp_words_by_ref -n = -n @ -n : -w words -i cword
+    else
+      cword="$COMP_CWORD"
+      words=("${COMP_WORDS[@]}")
+    fi
+
+
+    local si="$IFS"
+    if ! IFS=$'\n' COMPREPLY=($(COMP_CWORD="$cword" \
+                           COMP_LINE="$COMP_LINE" \
+                           COMP_POINT="$COMP_POINT" \
+                           npm completion -- "${words[@]}" \
+                           2>/dev/null)); then
+      local ret=$?
+      IFS="$si"
+      return $ret
+    fi
+    IFS="$si"
+    if type __ltrim_colon_completions &>/dev/null; then
+      __ltrim_colon_completions "${words[cword]}"
+    fi
+  }
+  complete -o default -F _npm_completion npm
+elif type compdef &>/dev/null; then
+  _npm_completion() {
+    local si=$IFS
+    compadd -- $(COMP_CWORD=$((CURRENT-1)) \
+                 COMP_LINE=$BUFFER \
+                 COMP_POINT=0 \
+                 npm completion -- "${words[@]}" \
+                 2>/dev/null)
+    IFS=$si
+  }
+  compdef _npm_completion npm
+elif type compctl &>/dev/null; then
+  _npm_completion () {
+    local cword line point words si
+    read -Ac words
+    read -cn cword
+    let cword-=1
+    read -l line
+    read -ln point
+    si="$IFS"
+    if ! IFS=$'\n' reply=($(COMP_CWORD="$cword" \
+                       COMP_LINE="$line" \
+                       COMP_POINT="$point" \
+                       npm completion -- "${words[@]}" \
+                       2>/dev/null)); then
+
+
+      local ret=$?
+      IFS="$si"
+      return $ret
+    fi
+    IFS="$si"
+  }
+  compctl -K _npm_completion npm
+fi
+###-end-npm-completion-###
+
+
+# Extra CA bundle for Node (e.g. corporate proxy like Zscaler).
+# Set NODE_EXTRA_CA_CERTS in ~/.bashrc.local, or drop a cert here:
+for _ca in /usr/local/share/ca-certificates/corporate.crt \
+           /usr/local/share/ca-certificates/zscaler.crt; do
+  if [ -r "$_ca" ]; then export NODE_EXTRA_CA_CERTS="$_ca"; break; fi
+done
+unset _ca
+
+
+# Created by `pipx` on 2026-02-12 16:41:20
+case ":$PATH:" in
+  *":/home/zaglauer/.local/bin:"*) ;;
+  *) export PATH="$PATH:/home/zaglauer/.local/bin" ;;
+esac
+
+# Ensure GPG works correctly in terminals/WSL
+export GPG_TTY=$(tty)
+command -v gpg-connect-agent >/dev/null 2>&1 && gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
+
+# =============================================================================
+# ENHANCEMENTS
+# =============================================================================
+
+# --- Network / DNS fix (IPv4-first to avoid corporate proxy AAAA timeouts) ---
+export NODE_OPTIONS="${NODE_OPTIONS} --dns-result-order=ipv4first"
+
+# --- History: bump limits, share across sessions immediately ----------------
+HISTSIZE=10000
+HISTFILESIZE=20000
+
+# --- Shell quality of life --------------------------------------------------
+shopt -s globstar      # ** recursive glob
+shopt -s autocd        # type a dir name to cd into it
+shopt -s cdspell       # fix minor typos in cd
+shopt -s dirspell      # fix minor typos in directory completion
+bind "set completion-ignore-case on" 2>/dev/null   # case-insensitive tab completion
+
+# --- Editor / pager -----------------------------------------------------------
+export EDITOR=nano
+export VISUAL=nano
+export LESS='-R'        # let colored output (e.g. git pager) render through less
+
+# --- fzf integration ----------------------------------------------------------
+if command -v fzf >/dev/null 2>&1; then
+  [ -f /usr/share/doc/fzf/examples/key-bindings.bash ] && . /usr/share/doc/fzf/examples/key-bindings.bash
+  [ -f /usr/share/doc/fzf/examples/completion.bash ] && . /usr/share/doc/fzf/examples/completion.bash
+fi
+
+# --- Git aliases ------------------------------------------------------------
+alias gs='git status -sb'
+alias ga='git add'
+alias gaa='git add -A'
+alias gc='git commit -v'
+alias gcm='git commit -m'
+alias gca='git commit -v --amend'
+alias gp='git push'
+alias gpf='git push --force-with-lease'   # safer than --force
+alias gpl='git pull --rebase'
+alias gco='git checkout'
+alias gcb='git checkout -b'
+alias gd='git diff'
+alias gds='git diff --staged'
+alias gb='git branch -vv'
+alias gba='git branch -a'
+alias grb='git rebase'
+alias grbi='git rebase -i'
+alias gst='git stash'
+alias gstp='git stash pop'
+alias glog='git log --graph --all --pretty="%C(auto)%h %C(cyan)%aN%C(reset) %C(green)%cs%C(reset)%C(auto)%d%C(reset) %s"'
+alias glast='git log -1 HEAD --stat'
+alias gunstage='git restore --staged'
+alias gwip='git add -A && git commit -m "WIP: $(date +%Y-%m-%d\ %H:%M)"'
+
+# --- NPM / Node / CAP -------------------------------------------------------
+alias ni='npm install'
+alias nid='npm install --save-dev'
+alias nig='npm install -g'
+alias nr='npm run'
+alias nrb='npm run build'
+alias nrt='npm run test'
+alias nrl='npm run lint'
+alias nrc='npm run start'
+alias nci='npm ci'
+alias nlg='npm list -g --depth=0'
+alias cdw='cds watch'
+alias cdb='cds build'
+alias cdx='cds deploy'
+
+# --- Directory navigation ---------------------------------------------------
+alias p='cd ~/projects'
+alias cdp='cd ~/projects'
+
+# Fuzzy project jump: `j <partial-name>`
+j() {
+  local dir
+  dir=$(find ~/projects -maxdepth 3 -type d -name ".git" 2>/dev/null \
+    | sed 's|/.git||' \
+    | grep -i "${1:-}" \
+    | head -20 \
+    | sort \
+    | ([ -t 0 ] && cat || fzf 2>/dev/null || head -1))
+  [ -n "$dir" ] && cd "$dir" || echo "No match for: $1"
+}
+
+# --- File / system ----------------------------------------------------------
+alias ll='ls -alFh --color=auto'
+alias lt='ls -lt --color=auto'            # sort by time
+alias lS='ls -lSh --color=auto'           # sort by size
+alias mkdir='mkdir -pv'                   # create parents, verbose
+alias cp='cp -iv'                         # interactive + verbose
+alias mv='mv -iv'
+alias rm='rm -Iv --preserve-root'         # prompt if >3 files, never rm /
+alias grep='grep --color=auto -n'
+alias ports='ss -tulnp'
+alias myip='curl -s https://ipinfo.io/ip'
+alias path='echo "$PATH" | tr ":" "\n" | nl'
+alias reload='source ~/.bashrc && echo "~/.bashrc reloaded"'
+alias bashrc='${EDITOR:-nano} ~/.bashrc'
+
+# --- GitHub CLI -------------------------------------------------------------
+alias ghpr='gh pr create --fill'
+alias ghprl='gh pr list'
+alias ghprv='gh pr view --web'
+alias ghrun='gh run list'
+
+# --- pass (password store) --------------------------------------------------
+alias pp='pass show'
+alias ppc='pass show -c'    # copy to clipboard
+
+# --- WSL-specific -----------------------------------------------------------
+alias open='explorer.exe'                          # open file/dir in Windows Explorer
+alias wslip='ip route show default | awk "{print \$3; exit}"'  # Windows host IP
+alias winpath='wslpath -w'                         # convert Linux path to Windows path
+
+# Quickly open Windows browser
+browser() { cmd.exe /C start "" "${1:-}" 2>/dev/null; }
+
+# --- Prompt: show git branch -----------------------------------------------
+__git_branch() {
+  git symbolic-ref --short HEAD 2>/dev/null | sed 's/.*/ (\0)/'
+}
+# Append git branch to existing PS1 (green branch name)
+PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\[\033[01;33m\]$(__git_branch)\[\033[00m\]\$ '
+
+# --- Welcome message ----------------------------------------------------------
+# Show once per top-level interactive shell
+if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${BASH_WELCOME_SHOWN:-}" ]; then
+  export BASH_WELCOME_SHOWN=1
+  user_name="${USER:-$(id -un 2>/dev/null)}"
+  first_name="$(getent passwd "$user_name" | cut -d: -f5 | awk -F',' '{print $1}' | awk '{print $1}')"
+  [ -z "${first_name}" ] && first_name="${user_name}"
+  quotes_file="${XDG_CACHE_HOME:-$HOME/.cache}/bofh_quotes.txt"
+  quotes_url="https://www.cs.wisc.edu/~ballard/bofh/excuses"
+  printf '\nWelcome back, %s!\n' "${first_name}"
+  printf '\nToday is %s the %s - %s\n' "$(date '+%A')" "$(date '+%d.%m.%Y')" "$(date '+%H:%M')"
+  mkdir -p "$(dirname "$quotes_file")"
+  # Refresh weekly, and only replace the cache on successful download.
+  if [ ! -s "$quotes_file" ] || [ $(( $(date +%s) - $(stat -c %Y "$quotes_file" 2>/dev/null || echo 0) )) -gt 604800 ]; then
+    tmp_file="${quotes_file}.$$"
+    if curl -fsSL --connect-timeout 3 --max-time 8 "$quotes_url" -o "$tmp_file"; then
+      mv -f "$tmp_file" "$quotes_file"
+    else
+      rm -f "$tmp_file"
+    fi
+  fi
+  if [ -s "$quotes_file" ]; then
+    bofh_quote="$(shuf -n 1 "$quotes_file" 2>/dev/null)"
+    [ -n "$bofh_quote" ] && printf '\nBOFH Excuse: %s\n\n' "$bofh_quote"
+  fi
+fi
+
+# --- Machine-local overrides (untracked) ------------------------------------
+# Put host-specific env vars, secrets-free tweaks, or work-only aliases here.
+[ -f "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"

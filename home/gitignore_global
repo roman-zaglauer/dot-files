@@ -1,0 +1,56 @@
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE / editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.#*
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.yarn/cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Logs & temp
+*.log
+logs/
+tmp/
+.tmp/
+*.pid
+
+# Build output
+dist/
+build/
+out/
+.build/
+coverage/
+
+# SAP CAP specific
+default-env.json
+private.json
+.cds-models/
+@cds-models/
+
+**/.claude/settings.local.json

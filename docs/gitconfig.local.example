@@ -1,0 +1,22 @@
+; Copy to ~/.gitconfig.local and fill in with your personal / machine-specific
+; values. This file is included from the tracked ~/.gitconfig via [include].
+; NEVER commit this file — it contains identity and (optionally) credential
+; helper paths specific to your machine.
+
+[user]
+	name  = Your Name
+	email = you@example.com
+	; signingkey = <GPG or SSH key id>
+
+; Example: pass-git-helper as credential helper (Linux/WSL)
+;[credential]
+;	useHttpPath = true
+;	helper = !pass-git-helper $@
+
+; Example: corporate CA bundle (e.g. Zscaler)
+;[http]
+;	sslcainfo = /usr/local/share/ca-certificates/corporate.crt
+
+; Example: sign every commit
+;[commit]
+;	gpgsign = true

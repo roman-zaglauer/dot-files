@@ -1,0 +1,36 @@
+; Personal identity, credential helpers, and any corporate/private config
+; live in ~/.gitconfig.local (git-ignored, not tracked in this repo).
+; See docs/gitconfig.local.example for a template.
+[include]
+	path = ~/.gitconfig.local
+
+[init]
+	defaultBranch = main
+[core]
+	editor = nano
+	autocrlf = input
+	whitespace = trailing-space,space-before-tab
+	excludesFile = ~/.gitignore_global
+[pull]
+	rebase = true
+[push]
+	autoSetupRemote = true
+	followTags = true
+[fetch]
+	prune = true
+	pruneTags = true
+[rebase]
+	autoStash = true
+[merge]
+	conflictstyle = zdiff3
+[diff]
+	algorithm = histogram
+	colorMoved = default
+[branch]
+	sort = -committerdate
+[tag]
+	sort = -version:refname
+[rerere]
+	enabled = true
+[help]
+	autocorrect = prompt
