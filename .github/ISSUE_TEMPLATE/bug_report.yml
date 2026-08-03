@@ -1,0 +1,46 @@
+name: Bug report
+description: Something in this repo (installer, tracked dotfile, workflow) doesn't work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report.
+        **Do not include** the contents of `~/.dotfiles/*`, `~/.gitconfig.local`,
+        `~/.bashrc.local`, SSH keys, GPG keys, or any credential material.
+  - type: input
+    id: os
+    attributes:
+      label: OS / shell
+      description: e.g. Ubuntu 24.04 on WSL2, GNU bash 5.2.21
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Repo commit
+      description: Output of `git rev-parse --short HEAD`
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Paste stderr/stdout. Use `./install.sh --dry-run <pkg>` if applicable.
+      render: shell

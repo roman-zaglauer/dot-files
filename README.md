@@ -117,4 +117,6 @@ dot-files/
 
 ## License
 
-[MIT](./LICENSE)
+[MIT](./LICENSE) · see also [SECURITY.md](./SECURITY.md) ·
+[CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) ·
+[CHANGELOG.md](./CHANGELOG.md)
