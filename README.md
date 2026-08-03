@@ -53,14 +53,30 @@ Existing files are moved to `~/.dotfiles-backup/<timestamp>/` before linking.
 
 1. Copy the git identity template and fill in your name/email:
    ```bash
-   cp docs/gitconfig.local.example ~/.gitconfig.local
-   $EDITOR ~/.gitconfig.local
+   mkdir -p ~/.dotfiles
+   cp docs/gitconfig.local.example ~/.dotfiles/gitconfig
+   $EDITOR ~/.dotfiles/gitconfig
    ```
-2. (Optional) Add host-specific env in `~/.bashrc.local`.
+2. (Optional) Add host-specific env in `~/.dotfiles/bashrc`.
 3. Reload:
    ```bash
    source ~/.bashrc
    ```
+
+### Local override convention
+
+Inspired by [rse/dotfiles](https://github.com/rse/dotfiles), every tracked
+dotfile automatically sources an optional untracked counterpart under
+`~/.dotfiles/`:
+
+| Tracked file        | Local override               |
+| ------------------- | ---------------------------- |
+| `~/.bashrc`         | `~/.dotfiles/bashrc`         |
+| `~/.inputrc`        | `~/.dotfiles/inputrc`        |
+| `~/.gitconfig`      | `~/.dotfiles/gitconfig`      |
+
+`~/.bashrc.local` and `~/.gitconfig.local` are still honoured for backward
+compatibility. All of these paths are matched by `.gitignore`.
 
 ## Uninstall
 

@@ -2,6 +2,12 @@
 
 $include /etc/inputrc
 
+# --- 8-bit clean (needed for German umlauts and other high-bit chars) ------
+set input-meta on
+set output-meta on
+set meta-flag on
+set convert-meta off
+
 set completion-ignore-case on
 set completion-map-case on
 set show-all-if-ambiguous on
@@ -21,3 +27,6 @@ set editing-mode emacs
 # Word-wise navigation with Ctrl+Left/Right
 "\e[1;5C": forward-word
 "\e[1;5D": backward-word
+
+# Optional machine-local override
+$include ~/.dotfiles/inputrc

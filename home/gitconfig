@@ -1,6 +1,9 @@
 ; Personal identity, credential helpers, and any corporate/private config
-; live in ~/.gitconfig.local (git-ignored, not tracked in this repo).
+; live in ~/.dotfiles/gitconfig (preferred) or ~/.gitconfig.local
+; (backward-compat). Neither is tracked in this repo.
 ; See docs/gitconfig.local.example for a template.
+[include]
+	path = ~/.dotfiles/gitconfig
 [include]
 	path = ~/.gitconfig.local
 

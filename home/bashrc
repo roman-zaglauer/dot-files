@@ -8,6 +8,20 @@ case $- in
       *) return;;
 esac
 
+# --- Locale & umask (safe defaults on minimal hosts) ------------------------
+export LC_CTYPE="${LC_CTYPE:-en_US.UTF-8}"
+umask 022
+
+# --- Exit-code warning ------------------------------------------------------
+# Print a red warning after any command that exited non-zero (but not 126/127
+# which readline already surfaces, and not SIGINT=130).
+_check_exit_code() {
+  local code=$?
+  if [ "$code" -gt 0 ] && [ "$code" -lt 126 ] && [ "$code" -ne 130 ]; then
+    printf '\001\e[31m\002bash: last command exited with code %d\001\e[0m\002\n' "$code"
+  fi
+}
+
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -21,7 +35,11 @@ HISTFILESIZE=2000
 HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
 HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S  "
 HISTCONTROL="erasedups:ignoreboth"
-PROMPT_COMMAND="history -a; history -c; history -r"
+PROMPT_COMMAND="_check_exit_code; history -a; history -c; history -r"
+
+# multiline commands stored as one entry, preserve newlines, hash-check binaries,
+# no completion on empty command line
+shopt -s cmdhist lithist checkhash no_empty_cmd_completion
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -342,6 +360,13 @@ alias winpath='wslpath -w'                         # convert Linux path to Windo
 # Quickly open Windows browser
 browser() { cmd.exe /C start "" "${1:-}" 2>/dev/null; }
 
+# --- tmux helper: attach if exists, create otherwise ------------------------
+tmux-session() {
+  local session=default
+  if [ $# -ge 1 ]; then session="$1"; shift; fi
+  tmux new-session -A -s "$session" "$@"
+}
+
 # --- Prompt: show git branch -----------------------------------------------
 __git_branch() {
   git symbolic-ref --short HEAD 2>/dev/null | sed 's/.*/ (\0)/'
@@ -378,4 +403,7 @@ fi
 
 # --- Machine-local overrides (untracked) ------------------------------------
 # Put host-specific env vars, secrets-free tweaks, or work-only aliases here.
-[ -f "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"
+# ~/.dotfiles/bashrc is the preferred location (matches rse-style convention);
+# ~/.bashrc.local is honoured too for backward compatibility.
+[ -f "$HOME/.dotfiles/bashrc" ] && . "$HOME/.dotfiles/bashrc"
+[ -f "$HOME/.bashrc.local" ]    && . "$HOME/.bashrc.local"
