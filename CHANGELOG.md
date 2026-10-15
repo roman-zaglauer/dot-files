@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `tmux` package (`tmux.conf`): `C-a` prefix, vi keys, cwd-preserving splits,
+  clipboard backend autodetection (clip.exe / xclip / wl-copy, OSC 52), and a
+  plugin-free Catppuccin Mocha theme.
+
 ## [0.1.0] — 2026-08-03
 
 First public release.
