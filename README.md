@@ -4,7 +4,7 @@
 [![Secret scan](https://github.com/roman-zaglauer/dot-files/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/roman-zaglauer/dot-files/actions/workflows/secret-scan.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-A small, portable set of dotfiles for **bash**, **git**, and **editorconfig** —
+A small, portable set of dotfiles for **bash**, **git**, **editorconfig**, and **tmux** —
 one repo, one command, any Linux/WSL/macOS box. Configs live in this repo and
 land in `$HOME` as symlinks, so an edit here is an edit everywhere.
 
@@ -32,6 +32,7 @@ Sample interactive session:
   [1] bash    (.bashrc .bash_logout .profile .inputrc)
   [2] git     (.gitconfig .gitignore_global)
   [3] editor  (.editorconfig)
+  [4] tmux    (.tmux.conf)
   [a] all   [q] quit
 » select: 1 2
 ✓ linked ~/.bashrc → ~/.local/share/dot-files/home/bashrc
@@ -45,6 +46,7 @@ Sample interactive session:
 | `bash`   | `.bashrc`, `.bash_logout`, `.profile`, `.inputrc` |
 | `git`    | `.gitconfig`, `.gitignore_global`                 |
 | `editor` | `.editorconfig`                                   |
+| `tmux`   | `.tmux.conf`                                      |
 
 Shell highlights:
 
@@ -60,6 +62,10 @@ Shell highlights:
 - Corporate CA auto-pickup for Node (`NODE_EXTRA_CA_CERTS`) if a cert exists
 - 8-bit-clean readline (`input-meta`, `output-meta`, `convert-meta off`)
 - `tmux-session <name>` helper for reusable named sessions
+
+tmux highlights: `C-a` prefix, vi keys, splits that keep the working
+directory, clipboard autodetection (WSL `clip.exe`, `xclip`, `wl-copy`, OSC 52),
+and a plugin-free Catppuccin Mocha theme.
 
 Git config `[include]`s `~/.gitconfig.local`, so **identity, signing keys,
 and credential helpers stay off GitHub**.
@@ -122,7 +128,8 @@ dot-files/
 ├── home/                        # tracked dotfiles (stored without leading dot)
 │   ├── bashrc  bash_logout  profile  inputrc
 │   ├── gitconfig  gitignore_global
-│   └── editorconfig
+│   ├── editorconfig
+│   └── tmux.conf
 ├── docs/gitconfig.local.example
 ├── install.sh                   # symlink + backup, interactive or scripted
 ├── uninstall.sh                 # reverses install.sh

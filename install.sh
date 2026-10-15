@@ -30,8 +30,9 @@ declare -A PACKAGES=(
   [bash]="bashrc bash_logout profile inputrc"
   [git]="gitconfig gitignore_global"
   [editor]="editorconfig"
+  [tmux]="tmux.conf"
 )
-PACKAGE_ORDER=(bash git editor)
+PACKAGE_ORDER=(bash git editor tmux)
 
 # --- colours ----------------------------------------------------------------
 if [ -t 1 ]; then
