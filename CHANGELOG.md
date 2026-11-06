@@ -6,6 +6,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `bin/` directory and matching `BIN_PACKAGES` table — package executables are
+  symlinked into `~/.local/bin/<name>`, with the same backup/restore handling
+  as `home/` dotfiles.
+- `bin/tmux-restore` — safe wrapper around `tmux-resurrect`'s `restore.sh`.
+  Run from a plain shell, the upstream script derives its socket from an unset
+  `$TMUX` and restores into `tmux -S ''`: a separate, orphaned server that
+  `tmux ls` never shows. The wrapper pins `$TMUX` to a real server first.
+- `tmux.conf` sources an optional `~/.dotfiles/tmux.conf`, matching the local
+  override convention already used by `bashrc`, `inputrc`, and `gitconfig`.
+- `tmux.conf`: session persistence via `tmux-resurrect` and `tmux-continuum`.
+
+### Changed
+- `tmux.conf` sets `@continuum-boot 'on'` so a tmux server is started at boot
+  by a systemd user unit — without it, continuum's restore-on-server-start
+  never fires after a reboot and sessions stay lost until the first manual
+  `tmux` call.
+- `tmux.conf` raises `@continuum-restore-max-delay` to `30` (default `10`);
+  the plugin must load within that window of server start or auto-restore is
+  silently skipped, which a cold WSL boot can miss.
+- `install.sh` / `uninstall.sh`: link and unlink logic factored into shared
+  `link_path` / `unlink_path` helpers so dotfiles and executables share one
+  code path.
+
+### Fixed
+- `--help` in `install.sh` and `uninstall.sh` printed past the comment header
+  into the script body (hard-coded `sed` line ranges). Both now stop at the
+  first non-comment line.
+
 ## [0.2.0] — 2026-11-06
 
 ### Added

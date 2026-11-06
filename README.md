@@ -4,9 +4,9 @@
 [![Secret scan](https://github.com/roman-zaglauer/dot-files/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/roman-zaglauer/dot-files/actions/workflows/secret-scan.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-A small, portable set of dotfiles for **bash**, **git**, **editorconfig**, and **tmux** —
-one repo, one command, any Linux/WSL/macOS box. Configs live in this repo and
-land in `$HOME` as symlinks, so an edit here is an edit everywhere.
+A small, portable set of dotfiles for **bash**, **git**, **editorconfig**, and
+**tmux** — one repo, one command, any Linux/WSL/macOS box. Configs live in this
+repo and land in `$HOME` as symlinks, so an edit here is an edit everywhere.
 
 Inspired by [rse/dotfiles](https://github.com/rse/dotfiles). Curated for my
 own daily use; shared publicly in case any of it is useful to you.
@@ -32,7 +32,7 @@ Sample interactive session:
   [1] bash    (.bashrc .bash_logout .profile .inputrc)
   [2] git     (.gitconfig .gitignore_global)
   [3] editor  (.editorconfig)
-  [4] tmux    (.tmux.conf)
+  [4] tmux    (.tmux.conf bin/tmux-restore)
   [a] all   [q] quit
 » select: 1 2
 ✓ linked ~/.bashrc → ~/.local/share/dot-files/home/bashrc
@@ -46,7 +46,7 @@ Sample interactive session:
 | `bash`   | `.bashrc`, `.bash_logout`, `.profile`, `.inputrc` |
 | `git`    | `.gitconfig`, `.gitignore_global`                 |
 | `editor` | `.editorconfig`                                   |
-| `tmux`   | `.tmux.conf`                                      |
+| `tmux`   | `.tmux.conf`, `~/.local/bin/tmux-restore`         |
 
 Shell highlights:
 
@@ -70,6 +70,69 @@ and a plugin-free Catppuccin Mocha theme.
 Git config `[include]`s `~/.gitconfig.local`, so **identity, signing keys,
 and credential helpers stay off GitHub**.
 
+## tmux
+
+`.tmux.conf` targets tmux ≥ 3.2 (`display-popup`) and uses
+[TPM](https://github.com/tmux-plugins/tpm) for three plugins. Highlights:
+
+- `C-a` prefix, `|`/`-` splits that keep the current directory, vim-style pane
+  navigation, 1-based window/pane indexing with `renumber-windows`
+- vi copy-mode, OSC 52 clipboard (works over SSH) with a local backend picked
+  at load time: `wl-copy` → `xclip` → `clip.exe`
+- Catppuccin Mocha status bar, no Nerd Font or plugin required
+- `extended-keys` + `terminal-features` so `Ctrl-Shift-<key>` reaches Neovim
+- Session persistence via `tmux-resurrect` (`prefix + M-s` / `M-r`) and
+  `tmux-continuum` (auto-save every 5 min, auto-restore on server start)
+
+Bootstrap TPM once, then install the plugins with `prefix + I`:
+
+```bash
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+tmux source-file ~/.tmux.conf
+```
+
+### Surviving a reboot
+
+tmux keeps all session state in server memory, so a reboot — or a
+`wsl --shutdown` — destroys it. Restoring automatically needs **two** things,
+and the second is easy to miss:
+
+1. `@continuum-restore 'on'` — restore saved sessions when the server starts.
+2. `@continuum-boot 'on'` — actually *start* a server at boot. Continuum
+   installs `~/.config/systemd/user/tmux.service` for this. Without it nothing
+   restores until the first manual `tmux` call, by which point the guard in
+   step 3 usually blocks it anyway.
+
+Both are set in `tmux.conf`. On a systemd machine also enable lingering, so
+the user manager (and the unit) starts without an interactive login:
+
+```bash
+loginctl enable-linger "$USER"
+systemctl --user enable --now tmux.service
+```
+
+On WSL this additionally requires `systemd=true` under `[boot]` in
+`/etc/wsl.conf`.
+
+Two upstream behaviours worth knowing:
+
+- **Auto-restore is skipped silently when another tmux server is running.**
+  `tmux-continuum` guards restore with `another_tmux_server_running_on_startup`
+  to avoid clobbering state across environments. Starting a second server by
+  hand therefore restores nothing, with no error.
+- **`restore.sh` run from a plain shell restores into an invisible server.**
+  It derives the socket from `$TMUX`, which is unset outside tmux, and runs
+  `tmux -S '' new-session` — an orphaned server `tmux ls` never lists. Use
+  `tmux-restore` (shipped in `bin/`) instead; inside tmux it is a passthrough.
+
+```bash
+tmux-restore                 # restore into the running server
+tmux-restore -L work         # ...on a named socket
+```
+
+`@continuum-restore-max-delay` is raised to 30s because the 10s default can be
+missed on a cold boot, which also silently skips the restore.
+
 ## Installer
 
 ```bash
@@ -83,9 +146,11 @@ and credential helpers stay off GitHub**.
 ```
 
 The installer creates symlinks like
-`~/.bashrc → <repo>/home/bashrc`. Existing regular files or directories at
-the destination are moved to `~/.dotfiles-backup/<timestamp>/` first, unless
-`--force` or `--no-backup` is passed.
+`~/.bashrc → <repo>/home/bashrc`, and for package executables
+`~/.local/bin/tmux-restore → <repo>/bin/tmux-restore`. Existing regular files
+or directories at the destination are moved to
+`~/.dotfiles-backup/<timestamp>/` first, unless `--force` or `--no-backup` is
+passed.
 
 To reverse the process:
 
@@ -106,6 +171,7 @@ per-machine aliases.
 | `~/.bashrc`    | `~/.dotfiles/bashrc`, then `~/.bashrc.local`      |
 | `~/.inputrc`   | `~/.dotfiles/inputrc`                             |
 | `~/.gitconfig` | `~/.dotfiles/gitconfig`, then `~/.gitconfig.local`|
+| `~/.tmux.conf` | `~/.dotfiles/tmux.conf`                           |
 
 The `*.local` variants are kept for backward compatibility. All of these
 paths are ignored by `.gitignore` and `.gitignore_global`.
@@ -130,6 +196,8 @@ dot-files/
 │   ├── gitconfig  gitignore_global
 │   ├── editorconfig
 │   └── tmux.conf
+├── bin/                         # executables → ~/.local/bin/
+│   └── tmux-restore
 ├── docs/gitconfig.local.example
 ├── install.sh                   # symlink + backup, interactive or scripted
 ├── uninstall.sh                 # reverses install.sh
