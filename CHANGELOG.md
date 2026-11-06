@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-11-06
+
 ### Added
 - `tmux` package (`tmux.conf`): `C-a` prefix, vi keys, cwd-preserving splits,
   clipboard backend autodetection (clip.exe / xclip / wl-copy, OSC 52), and a
@@ -41,5 +43,6 @@ First public release.
   (`.github/workflows/secret-scan.yml`).
 - Dependabot config for GitHub Actions version bumps.
 
-[Unreleased]: https://github.com/roman-zaglauer/dot-files/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/roman-zaglauer/dot-files/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/roman-zaglauer/dot-files/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/roman-zaglauer/dot-files/releases/tag/v0.1.0
