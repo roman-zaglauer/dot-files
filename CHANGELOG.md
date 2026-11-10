@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by a systemd user unit — without it, continuum's restore-on-server-start
   never fires after a reboot and sessions stay lost until the first manual
   `tmux` call.
+- README no longer suggests `systemctl --user enable --now tmux.service`.
+  `--now` starts the unit while a tmux server is already running; because
+  `tmux start-server` exits immediately in that case, the `Type=forking` unit
+  finds nothing to track, goes `inactive`, and runs its `ExecStop` —
+  `tmux kill-server` — destroying the running server and every session in it.
 - `tmux.conf` raises `@continuum-restore-max-delay` to `30` (default `10`);
   the plugin must load within that window of server start or auto-restore is
   silently skipped, which a cold WSL boot can miss.
@@ -31,6 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   code path.
 
 ### Fixed
+- `tmux.conf` sets `@continuum-systemd-start-cmd 'start-server'` and
+  `exit-empty off`, so tmux sessions actually survive a reboot. The unit's
+  default `ExecStart` (`tmux new-session -d`) gives the boot server a
+  throwaway session `0`; `tmux-resurrect` treats a one-pane server as
+  "restoring from scratch" and kills session `0` on completion — even when it
+  restored nothing. The empty server then exits, systemd runs `ExecStop`
+  against a dead server, and `save.sh` overwrites `last` with a 0-byte save,
+  so every subsequent boot had nothing left to restore. `start-server` creates
+  no session (the documented alternative in continuum's systemd docs), and
+  `exit-empty off` keeps that session-less server alive, as tmux(1) requires.
 - `--help` in `install.sh` and `uninstall.sh` printed past the comment header
   into the script body (hard-coded `sed` line ranges). Both now stop at the
   first non-comment line.

@@ -94,8 +94,8 @@ tmux source-file ~/.tmux.conf
 ### Surviving a reboot
 
 tmux keeps all session state in server memory, so a reboot — or a
-`wsl --shutdown` — destroys it. Restoring automatically needs **two** things,
-and the second is easy to miss:
+`wsl --shutdown` — destroys it. Restoring automatically needs **three** things,
+and the last one is easy to miss:
 
 1. `@continuum-restore 'on'` — restore saved sessions when the server starts.
 2. `@continuum-boot 'on'` — actually *start* a server at boot. Continuum
@@ -108,11 +108,44 @@ the user manager (and the unit) starts without an interactive login:
 
 ```bash
 loginctl enable-linger "$USER"
-systemctl --user enable --now tmux.service
+systemctl --user enable tmux.service    # enable only — see the warning below
 ```
+
+> **Do not run `systemctl --user start` (or `enable --now`) while a tmux
+> server is already running.** `tmux start-server` returns immediately when a
+> server exists, so the `Type=forking` unit never finds a process to track,
+> drops straight to `inactive`, and runs its `ExecStop` — whose second line is
+> `tmux kill-server`. Starting the unit by hand therefore destroys the running
+> server and every session in it. Let it start on its own at boot, when no
+> server exists yet.
 
 On WSL this additionally requires `systemd=true` under `[boot]` in
 `/etc/wsl.conf`.
+
+3. `@continuum-systemd-start-cmd 'start-server'` — **the one that is easy to
+   get wrong.** The unit's default `ExecStart` is `tmux new-session -d`, which
+   gives the boot server a throwaway session `0`. `tmux-resurrect` sees a
+   server holding exactly one pane, decides it is "restoring from scratch",
+   and kills session `0` when it finishes — *including when it restored
+   nothing at all*. The server is then empty, `exit-empty` (on by default)
+   makes it quit, systemd runs `ExecStop` against a dead server, and
+   `save.sh` happily writes a **0-byte save** and repoints `last` at it. The
+   previous good save is gone and every later boot has nothing to restore.
+
+   `start-server` creates no session, so none of that is triggered. It is the
+   documented alternative in [continuum's systemd docs][continuum-systemd].
+
+Because `start-server` starts a server with no sessions, `tmux.conf` also sets
+`exit-empty off` — tmux(1) calls this out explicitly:
+
+> Note that as by default the tmux server will exit with no sessions, this is
+> only useful if a session is created in `~/.tmux.conf`, `exit-empty` is
+> turned off, or another command is run as part of the same command sequence.
+
+With the server kept alive, the unit's `ExecStop` runs `save.sh` against a
+*live* server, so the shutdown save is a real one.
+
+[continuum-systemd]: https://github.com/tmux-plugins/tmux-continuum/blob/master/docs/systemd_details.md
 
 Two upstream behaviours worth knowing:
 
@@ -132,6 +165,17 @@ tmux-restore -L work         # ...on a named socket
 
 `@continuum-restore-max-delay` is raised to 30s because the 10s default can be
 missed on a cold boot, which also silently skips the restore.
+
+Continuum writes `tmux.service` **only when the file does not already exist**,
+so changing `@continuum-systemd-start-cmd` on a machine that already has the
+unit needs it regenerated:
+
+```bash
+rm ~/.config/systemd/user/tmux.service
+tmux source-file ~/.tmux.conf      # continuum rewrites and re-enables it
+systemctl --user daemon-reload
+grep ExecStart ~/.config/systemd/user/tmux.service   # => tmux start-server
+```
 
 ## Installer
 
