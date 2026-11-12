@@ -143,9 +143,35 @@ Because `start-server` starts a server with no sessions, `tmux.conf` also sets
 > turned off, or another command is run as part of the same command sequence.
 
 With the server kept alive, the unit's `ExecStop` runs `save.sh` against a
-*live* server, so the shutdown save is a real one.
+*live* server — but **not** against live *sessions*: see the next section.
 
 [continuum-systemd]: https://github.com/tmux-plugins/tmux-continuum/blob/master/docs/systemd_details.md
+
+### The shutdown save must be guarded
+
+tmux ≥ 3.4 on systemd places every pane process in its own transient scope
+(`tmux-spawn-*.scope`). At system shutdown those scopes are stopped **in
+parallel** with `tmux.service`, so by the time its `ExecStop` runs, the panes
+— and with them all sessions — are usually already gone. `save.sh` does not
+check for that ([tmux-continuum #94][continuum-94]): it writes an *empty* save
+and repoints `last` at it, silently discarding the last good periodic save.
+
+The documented workaround is a drop-in that only saves when at least one
+session still exists, leaving continuum's periodic saves
+(`@continuum-save-interval`) as the source of truth:
+
+```bash
+systemctl --user edit tmux.service
+```
+
+```ini
+[Service]
+ExecStop=
+ExecStop=-/bin/sh -c 'if tmux has-session 2>/dev/null; then exec "$HOME/.tmux/plugins/tmux-resurrect/scripts/save.sh" quiet; fi'
+ExecStop=-/usr/bin/tmux kill-server
+```
+
+[continuum-94]: https://github.com/tmux-plugins/tmux-continuum/issues/94
 
 Two upstream behaviours worth knowing:
 

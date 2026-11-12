@@ -36,6 +36,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   code path.
 
 ### Fixed
+- README documents guarding the `tmux.service` shutdown save with a systemd
+  drop-in (`systemctl --user edit tmux.service`). tmux ≥ 3.4 runs panes in
+  their own transient scopes, which systemd stops in parallel with the service
+  at shutdown; `ExecStop`'s `save.sh` then finds zero sessions and overwrites
+  the last good periodic save with an empty one
+  (tmux-plugins/tmux-continuum#94). The drop-in only saves when
+  `tmux has-session` succeeds, leaving continuum's periodic saves as the
+  source of truth.
+- `bin/tmux-restore` could not restore into a server without sessions — the
+  normal state of the boot server, which starts via `tmux start-server`.
+  `has-session` and `display-message` both fail there, so the wrapper now
+  resolves the socket path itself and probes liveness with `show -s`, which
+  works on a session-less server.
 - `tmux.conf` sets `@continuum-systemd-start-cmd 'start-server'` and
   `exit-empty off`, so tmux sessions actually survive a reboot. The unit's
   default `ExecStart` (`tmux new-session -d`) gives the boot server a

@@ -16,10 +16,12 @@ set -euo pipefail
 RESTORE_SCRIPT="${HOME}/.tmux/plugins/tmux-resurrect/scripts/restore.sh"
 [ -x "$RESTORE_SCRIPT" ] || { echo "tmux-restore: $RESTORE_SCRIPT not found" >&2; exit 1; }
 
-tmux_args=()
+sock_name=""
+sock_path=""
 while [ $# -gt 0 ]; do
 	case "$1" in
-		-L|-S) tmux_args+=("$1" "$2"); shift 2 ;;
+		-L) sock_name="$2"; shift 2 ;;
+		-S) sock_path="$2"; shift 2 ;;
 		-h|--help) sed -n '2,14p' "$0"; exit 0 ;;
 		*) echo "tmux-restore: unknown argument '$1'" >&2; exit 2 ;;
 	esac
@@ -29,14 +31,23 @@ if [ -n "${TMUX:-}" ]; then
 	exec "$RESTORE_SCRIPT"
 fi
 
-if ! tmux "${tmux_args[@]+"${tmux_args[@]}"}" has-session 2>/dev/null; then
-	echo "tmux-restore: no running tmux server; start one first (e.g. 'tmux new-session -d')" >&2
+# Resolve the socket path the way tmux(1) does for -L: $TMUX_TMPDIR (or /tmp)
+# plus a tmux-UID directory. We cannot ask tmux for it: on a server without
+# sessions (the boot server started via `tmux start-server` has none until the
+# restore runs) both `has-session` and `display-message` fail.
+if [ -n "$sock_path" ]; then
+	socket="$sock_path"
+else
+	socket="${TMUX_TMPDIR:-/tmp}/tmux-$(id -u)/${sock_name:-default}"
+fi
+
+# `show -s` (server options) is the one query that succeeds on a live server
+# even with zero sessions, and fails on a dead or absent one.
+if ! tmux -S "$socket" show -s >/dev/null 2>&1; then
+	echo "tmux-restore: no running tmux server on ${socket}; start one first (e.g. 'tmux new-session -d')" >&2
 	exit 1
 fi
 
-socket="$(tmux "${tmux_args[@]+"${tmux_args[@]}"}" display-message -p -F '#{socket_path}')"
-pid="$(tmux "${tmux_args[@]+"${tmux_args[@]}"}" display-message -p -F '#{pid}')"
-
-TMUX="${socket},${pid},0" "$RESTORE_SCRIPT"
-echo "tmux-restore: restored into ${socket} (server pid ${pid})"
-tmux "${tmux_args[@]+"${tmux_args[@]}"}" list-sessions
+TMUX="${socket},0,0" "$RESTORE_SCRIPT"
+echo "tmux-restore: restored into ${socket}"
+tmux -S "$socket" list-sessions
